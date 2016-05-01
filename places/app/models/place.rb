@@ -45,13 +45,24 @@ def self.find_by_short_name(to_find)
     Place.collection.find({"address_components.short_name": to_find})
   end
 
-def self.to_places ms
+def self.to_places places
     p = []
-    ms.each { |m| 
+    places.each { |m| 
       p << Place.new(m) 
     }
     return p
   end
+
+  def self.find to_find
+    _id = BSON::ObjectId.from_string(to_find)
+    p = collection.find(:_id => _id).first
+    if !p.nil?
+      Place.new(p)
+    else
+      nil
+    end
+  end
+
 
 
 end
