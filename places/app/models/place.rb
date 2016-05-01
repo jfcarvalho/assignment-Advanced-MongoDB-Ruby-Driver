@@ -45,5 +45,13 @@ def self.find_by_short_name(to_find)
     Place.collection.find({"address_components.short_name": to_find})
   end
 
+def self.to_places ms
+    p = []
+    ms.each { |m| 
+      p << Place.new(m) 
+    }
+    return p
+  end
+
 
 end
