@@ -173,5 +173,18 @@ def self.create_indexes
     return near_points
   end
 
+def photos(offset=0, limit=0)
+    self.class.mongo_client.database.fs.find(
+      "metadata.place": BSON::ObjectId.from_string(@id)
+    ).map { |photo|
+      Photo.new(photo)
+    }
+  end 
+
+
+  def persisted?
+    !@id.nil?
+  end
+
 
 end

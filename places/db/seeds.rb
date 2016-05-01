@@ -7,10 +7,41 @@
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
 require 'pp'
-Photo.all.each { |photo| photo.destroy }
-Place.all.each { |place| place.destroy }
-Place.create_indexes
-Place.load_all(File.open('./db/places.json'))
-Dir.glob("./db/image*.jpg") {|f| photo=Photo.new; photo.contents=File.open(f,'rb'); photo.save}
-Photo.all.each {|photo| place_id=photo.find_nearest_place_id 1*1609.34; photo.place=place_id; photo.save}
-pp Place.all.reject {|pl| pl.photos.empty?}.map {|pl| pl.formatted_address}.sort
+mongo_client = Mongoid::Clients.default
+
+
+Photo.mongo_client.database.fs.find.each { |photo|
+  photo_id = photo[:_id].to_s
+  p = Photo.find(photo_id)
+  p.destroy
+}
+
+
+mongo_client[:places].delete_many()
+
+
+mongo_client[:places].indexes.create_one(
+  {'geometry.geolocation': Mongo::Index::GEO2DSPHERE}
+)
+
+
+place_file = File.open("./db/places.json")
+Place.load_all(place_file)
+
+
+Dir.glob("./db/image*.jpg").each { |file_name| 
+  p = Photo.new 
+  f = File.open(file_name)
+  f.rewind
+  p.contents = f 
+  id = p.save
+}  
+
+
+Photo.all.each { |photo|
+  place_id = photo.find_nearest_place_id(1609.34)
+  photo_id = photo.id.to_s
+  p = Photo.find(photo_id)
+  p.place = place_id
+  p.save
+}
