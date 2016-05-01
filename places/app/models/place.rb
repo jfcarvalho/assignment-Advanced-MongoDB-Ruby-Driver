@@ -8,7 +8,24 @@ class Place
   require 'uri'
   require 'json'
 
+  attr_accessor :id, :formatted_address, :location, :address_components
+
  @@db = nil
+
+ def initialize(params={})
+    @id = params[:_id].to_s
+
+    @address_components = []
+    if !params[:address_components].nil?
+      address_components = params[:address_components]
+      address_components.each { |a| @address_components << AddressComponent.new(a) }
+    end
+    
+
+    @formatted_address = params[:formatted_address]
+    @location = Point.new(params[:geometry][:geolocation])
+  end
+
  
  def self.mongo_client
     @@db = Mongo::Client.new('mongodb://localhost:27017/places_development')
