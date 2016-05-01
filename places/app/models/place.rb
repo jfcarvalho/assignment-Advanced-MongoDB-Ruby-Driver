@@ -41,5 +41,9 @@ def self.load_all io
 	self.collection.insert_many(file_json)
 end	
 
+def self.find_by_short_name(to_find)
+    Place.collection.find({"address_components.short_name": to_find})
+  end
+
 
 end
